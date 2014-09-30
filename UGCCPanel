@@ -705,7 +705,7 @@ if [ "$1" == "-install" ] || [ "$1" == "--install" ] ||  [ "$1" == "install" ] |
 	echo -e "If it doesn't then read  '$Main_Dir${r}$S_Name${w}.txt"
 else
 	echo ""
-	echo "${r}Usage ${w}: { --install | start | stop | restart }"
+	echo -e "${r}Usage ${w}: { --install | start | stop | restart }"
 	echo "Example : $0 --install"
 	f_root
 fi
