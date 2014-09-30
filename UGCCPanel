@@ -1,0 +1,684 @@
+#!/bin/bash
+
+# Automatic UGCC Gaming Panel Installtion Script
+# Author : Shirish Saxena
+# Version : 1.1v
+# Copyright to Shirish [ me@shirish.me ] @ 2014
+#
+
+
+# --------------------------------------------- { Main Function/Var's } --------------------------------------------- #
+
+######################################################################################################################
+w='\033[0m'
+r='\033[00;31m'
+g='\033[00;32m'
+y='\033[00;33m'
+b='\033[00;34m'
+p='\033[00;35m'
+c='\033[00;36m'
+lg='\033[00;37m'
+
+lr='\033[01;31m'
+lgreen='\033[01;32m'
+ly='\033[01;33m'
+lb='\033[01;34m'
+lp='\033[01;35m'
+dblue='\033[01;36m'
+
+S_Name="${0##*/}"
+S_Dir="$S_Name""_logs"
+Main_Dir=`pwd`
+Log_Dir="$Main_Dir""/$S_Dir"
+
+##################################
+function f_LogDir()
+{
+cd $Main_Dir
+if [ -d $S_Dir ] ; then
+	echo "" &>/dev/null
+else
+	mkdir "$S_Dir"
+fi
+}
+##################################
+##################################
+function f_System_Info()
+{
+System_Bit=`uname -m | sed 's/x86_//;s/i[3-6]86/32/'`
+System_Info=`lsb_release -sd 2>/dev/null || cat /etc/*release or lsb_release -ds 2>/dev/null || cat /etc/*release 2>/dev/null | head -n1 || uname -om`
+echo ""
+echo -e "${r}Your System ${w}: ${lb}$System_Info ${lg}|| ${lgreen}$System_Bit${g} bit ${w}"
+}
+##################################
+##################################
+function f_root()
+{
+if [ `whoami` != "root" ]; then
+p_fail "Script should be run as ${r}root!${w}"
+echo ""
+exit
+fi
+}
+##################################
+##################################
+function f_Main()
+{
+clear
+echo ""
+echo -e "${w}Welcome to ${r}UGCC${c}Gaming Panel ${lg}Installer${w}"
+echo -e "Author     : ${g}Shirish${w} Saxena"
+echo -e "${w}Xfire  : mrshowoff15${w}"
+echo -e "Version : ${lb}1.1v${w}"
+}
+##################################
+##################################
+p_bye(){
+	echo -en "\r\033[K[\e[1;36m BYE \e[0;39m]\n"
+}
+##################################
+p_fail(){
+    echo -en "\r\033[K[\e[0;31m FAIL \e[0;39m] $@"
+}
+##################################
+p_ok(){
+    echo -en "\r\033[K[\e[0;32m  OK  \e[0;39m] $@"
+}
+##################################
+p_info(){
+    echo -en "\r\033[K[\e[0;36m INFO \e[0;39m] $@"
+}
+##################################
+p_beware(){
+	echo -en "\r\033[K[\e[${lr} Beware \e[0;39m] $@\n"
+	}
+##################################
+p_warn(){
+	echo -en "\r\033[K[\e[1;33m WARN \e[0;39m] $@"
+	}
+##################################
+p_dots(){
+    echo -en "\r\033[K[ .    ] $@"
+	sleep 0.2
+	echo -en "\r\033[K[ ..   ] $@"
+	sleep 0.2
+	echo -en "\r\033[K[ ...  ] $@"
+	sleep 0.2
+	echo -en "\r\033[K[ .... ] $@"
+	sleep 0.2
+	echo -en "\r\033[K[ .    ] $@"
+	sleep 0.2
+	echo -en "\r\033[K[ ..   ] $@"
+	sleep 0.2
+	echo -en "\r\033[K[ ...  ] $@"
+	sleep 0.2
+	echo -en "\r\033[K[ .... ] $@"
+	sleep 0.2
+	
+	# Total time : 1.6 s
+}
+##################################
+##################################
+function wGet_Fit()
+{
+    local flag=false c count cr=$'\r' nl=$'\n'
+    while IFS='' read -d '' -rn 1 c
+    do
+        if $flag
+        then
+            printf '%c' "$c"
+        else
+            if [[ $c != $cr && $c != $nl ]]
+            then
+                count=0
+            else
+                ((count++))
+                if ((count > 1))
+                then
+                    flag=true
+                fi
+            fi
+        fi
+    done
+}
+##################################                 XXXXXXXXXXXXXXXX                 #################################
+
+# --------------------------------------------- { Functions Dependent on Other Functions } --------------------------------------------- #
+########################################################################################################################################
+function Folder_Delete()
+{
+if [ -d $1 ] ; then
+	if [ "$(ls -A $1)" ]; then
+	rm -rf $1 &>/dev/null
+	fi
+fi
+}
+##################################
+##################################
+function f_DebianApt()
+{
+	echo ""
+	p_dots "Installing $1"
+	p_dots "Installing $1"
+	apt-get install $1 -y &> /dev/null
+	p_ok "Installed : ${g}$1${w}"
+	sleep 3
+}
+##################################
+##################################
+function f_CentyDep() 
+{
+	if yum list installed "$@" >/dev/null 2>&1; then
+		echo -n ""
+	else
+		echo ""
+		p_dots "Checking if $1 is Installed"
+		p_warn "Package not Installed : ${r}$1${w}"
+		sleep 1.5
+		p_dots "Installing : ${r}$1${w} "
+		p_info "Installing : ${r}$1${w} "
+		yum install $1 -y >/dev/null 2>&1
+		sleep 1
+		p_ok "Installed : $1"
+		echo ""
+	fi
+}
+##################################
+##################################
+function WGet_Passy()
+{
+wget --progress=bar:force --user centos --password centos $1 2>&1 | wGet_Fit
+echo ""
+}
+##################################
+function f_CleanAll_RedHat()
+{
+cd $Main_Dir
+if [ -d $1 ] ; then
+	rm -rf $1 &> /dev/null
+fi
+if [ -f $2 ] ; then
+	rm -f $2 &> /dev/null
+fi
+}
+##################################
+# --------------------------------------------- { Building things from Source Functions } --------------------------------------------- #
+########################################################################################################################################
+function f_Build_7Zip()
+{
+			echo ""
+			cd $Main_Dir
+			p_dots "P7Zip is ${r}not ${lg}installed !${w}"
+			sleep 2
+			p_dots "Downloading : ${g}P7Zip v9.20.1${w}"
+			echo ""
+			echo "#########################################################"
+			echo ""
+			if [ -f p7zip_9.20.1_src_all.tar.bz2 ] ; then
+					rm -f p7zip_9.20.1_src_all.tar.bz2 &> /dev/null
+			else
+					echo -n ""
+			fi
+			WGet_Passy 'http://shirish.me/Me/CentOs_Dep/p7zip_9.20.1_src_all.tar.bz2'
+			echo "#########################################################"
+			echo ""
+			p_warn "Installing Dependencies for building ${r}P7Zip ${w}v9.20.1"
+			echo ""
+			sleep 1
+			p_dots "Extracting P7Zip-9.20.1"
+			if [ -d p7zip_9.20.1 ] ; then
+					rm -rf p7zip_9.20.1 &> /dev/null
+				else
+					echo "" &> /dev/null
+				fi
+			tar --bzip2 -xvf p7zip_9.20.1_src_all.tar.bz2 >> $Log_Dir/Extraction_P7Zip.log 2>&1
+			rm -f p7zip_9.20.1_src_all.tar.bz2 &>/dev/null
+			echo ""
+			p_ok "Extraction Completed : P7Zip-9.20.1"
+			cd p7zip_9.20.1 &>/dev/null
+			Bits=`uname -m | sed 's/x86_//;s/i[3-6]86/32/'`
+				if [ "$Bits" == "32" ] ; then
+					cp makefile.linux_any_cpu makefile.machine &>/dev/null
+				elif [ "$Bits" == "64" ] ; then
+					cp makefile.linux_amd64 makefile.machine &>/dev/null
+				else
+					cp makefile.linux_any_cpu makefile.machine &>/dev/null
+				fi
+			p_info "Configuring P7Zip-9.20.1"
+			echo ""
+			sleep 1
+			p_beware "May take 10-15 min ..."
+			make all_test >> $Log_Dir/Build_P7Zip.log 2>&1
+			echo ""
+			p_ok "Installing : P7Zip"
+			p_beware "May take 5-10 min ..."
+			./install.sh >> $Log_Dir/Install_P7Zip.log 2>&1
+			p_ok "P7Zip Installation : ${lgreen}Completed${w}"
+			sleep 3
+}
+####################################################################
+####################################################################
+function f_Build_XSP2()
+{
+			cd $Main_Dir &>/dev/null
+			echo ""
+			p_dots "XSP2 is ${r}not ${lg}installed !${w}"
+			sleep 2
+			p_dots "Downloading XSP2"
+			echo ""
+			echo "#########################################################"
+			echo ""
+				if [ -f xsp-2.10.2.tar.bz2 ] ; then
+					rm -f xsp-2.10.2.tar.bz2 &> /dev/null
+				else
+					echo "" &> /dev/null
+				fi
+			WGet_Passy 'http://shirish.me/Me/CentOs_Dep/xsp-2.10.2.tar.bz2'
+			echo "#########################################################"
+			echo ""
+			sleep 2
+			p_dots "Extracting Mono_XSP-2.10.2"
+			p_info "Extracting Mono_XSP-2.10.2"
+				if [ -d xsp-2.10.2 ] ; then
+					rm -rf xsp-2.10.2 &> /dev/null
+				else
+					echo "" &> /dev/null
+				fi
+			tar --bzip2 -xvf xsp-2.10.2.tar.bz2 >> $Log_Dir/Extract_xsp-2.10.2.log 2>&1
+			rm -rf xsp-2.10.2.tar.bz2 &>/dev/null
+			echo ""
+			p_ok "Extraction Completed : Mono_XSP-2.10.2"
+			cd xsp-2.10.2 &>/dev/null
+			echo ""
+			p_info "Configuring Mono_XSP v2.10.2"
+			PKG_CONFIG_PATH=/usr/lib/pkgconfig ./configure --prefix=/usr  >> $Log_Dir/Configure_xsp2.log 2>&1
+			echo ""
+			p_dots "Configuring Mono_XSP v2.10.2 : ${lgreen}Completed${w}"
+			sleep 1.5
+			p_info "Building Mono_XSP v2.10.2 : ${lgreen}Started${w}"
+			sleep 1
+			make >> $Log_Dir/Building_xsp2.log 2>&1 
+			echo "Building Mono_XSP v.2.10.2 : ${lgreen}Completed${w}"
+			p_ok "Installing Mono_XSP v2.10.2"
+			make install >> $Log_Dir/Install_xsp.log 2>&1
+			sleep 1
+			echo ""
+			p_ok "Mono_XSP v2.10.2 : ${g}Installed${w}"
+			echo ""
+			sleep 3
+}
+####################################################################
+####################################################################
+function f_Build_Mono()
+{
+			echo ""
+			cd $Main_Dir
+			p_dots "Mono is ${r}not ${lg}installed !${w}"
+			sleep 2
+			p_dots "Downloading Mono"
+			echo ""
+			echo "#########################################################"
+			echo ""
+				if [ -f mono-2.10.9.tar.bz2 ] ; then
+					rm -f mono-2.10.9.tar.bz2 &> /dev/null
+				else
+					echo -n ""
+				fi
+			WGet_Passy 'http://shirish.me/Me/CentOs_Dep/mono-2.10.9.tar.bz2'
+			echo "#########################################################"
+			echo ""
+			sleep 2
+			p_dots "Extracting Mono-2.10.9"
+			p_info "Extracting Mono-2.10.9"
+				if [ -d mono-2.10.9 ] ; then
+					rm -rf mono-2.10.9 &> /dev/null
+				else
+					echo "" &> /dev/null
+				fi
+			tar --bzip2 -xvf mono-2.10.9.tar.bz2 >> $Log_Dir/Extract_Mono.log 2>&1
+			rm -rf mono-2.10.9.tar.bz2 &>/dev/null
+			echo ""
+			p_ok "Extraction Completed : Mono-2.10.9"
+			cd mono-2.10.9 &>/dev/null
+			echo ""
+			p_info "Configuring Mono v2.10.9"
+			./configure --prefix=/usr >> $Log_Dir/Configure_Mono.log 2>&1
+			echo ""
+			p_dots "Configuring Mono v2.10.9 : ${lgreen}Completed${w}"
+			sleep 1.5
+			p_info "Building Mono v2.10.9 : ${lgreen}Started${w}"
+			echo ""
+			sleep 1
+			echo ""
+			make >> $Log_Dir/Building_Mono.log 2>&1 
+			echo "Building Mono v.2.10.9 : ${lgreen}Completed${w}"
+			p_ok "Installing Mono v2.10.9"
+			make install >> $Log_Dir/Make_Install_Mono.log 2>&1
+			sleep 1
+			echo ""
+			p_ok "Mono v2.10.9 : ${g}Installed${w}"
+			echo ""
+			sleep 3
+}
+###########################################################################################################################
+# --------------------------------------------- { Prerequisites Functions } --------------------------------------------- #
+###########################################################################################################################
+function f_PanelDep()
+{
+OS=`uname -s`
+REV=`uname -r`
+MACH=`uname -m`
+
+if [ "${OS}" = "Linux" ] ; then
+    KERNEL=`uname -r`
+    if [ -f /etc/redhat-release ] ; then
+		echo ""
+		f_CentyDep glib2-devel
+		f_CentyDep libpng-devel
+		f_CentyDep libgxim-devel
+		f_CentyDep libtiff-devel
+	#	f_CentyDep libjpeg-devel
+		f_CentyDep giflib-devel
+	#	f_CentyDep libexifdevel
+		f_CentyDep bison
+		f_CentyDep byacc
+		f_CentyDep cscope
+		f_CentyDep ctags
+		f_CentyDep cvs
+		f_CentyDep diffstat
+		f_CentyDep doxygen
+		f_CentyDep flex
+		f_CentyDep gcc
+		f_CentyDep gcc-c++
+		f_CentyDep gcc-gfortran
+		f_CentyDep gettext
+		f_CentyDep git
+		f_CentyDep indent
+		f_CentyDep intltool
+		f_CentyDep libtool
+		f_CentyDep patch
+		f_CentyDep patchutils
+		f_CentyDep rcs
+		f_CentyDep redhat-rpm-config
+	#	f_CentyDep rpm_build
+		f_CentyDep subversion
+		f_CentyDep swig
+		f_CentyDep systemtap
+		echo ""
+		####################################
+		if hash mono 2>/dev/null; then
+			echo -n ""
+		else
+			echo ""
+			f_Build_Mono
+		fi
+		####################################
+		####################################
+		if hash 7z 2>/dev/null; then
+			echo -n ""
+		else
+			f_Build_7Zip
+		fi
+		####################################
+		####################################
+		if hash curl 2>/dev/null; then
+			echo -n ""
+		else
+			p_dots "Curl not ${r}Found${w}"
+			p_info "Installing Curl"
+			yum install curl -y &>/dev/null
+			p_ok "Curl Installed"
+		fi
+		####################################
+		####################################
+		if hash screen 2>/dev/null; then
+			echo -n ""
+		else
+			p_dots "Screen not ${r}Found${w}"
+			p_info "Installing Screen"
+			yum install screen -y &>/dev/null
+			p_ok "Screen Installed"
+		fi
+		####################################
+		####################################
+		echo ""
+	elif [ -f /etc/debian_version ] ; then
+		#################################
+		if hash mono 2>/dev/null; then
+			echo -n ""
+		else
+			f_DebianApt mono-complete
+		fi
+		####################################
+		####################################
+		if hash xsp2 2>/dev/null; then
+			echo -n ""
+		else
+			f_DebianApt mono-xsp2
+		fi
+		####################################
+		####################################
+		if hash xsp2 2>/dev/null; then
+			echo -n ""
+		else
+			f_DebianApt p7zip-full
+		fi
+		####################################
+		####################################
+		if hash curl 2>/dev/null; then
+			echo -n ""
+		else
+			f_DebianApt curl
+		fi
+		####################################
+		####################################
+		if hash screen 2>/dev/null; then
+			echo -n ""
+		else
+			f_DebianApt screen
+		fi
+		####################################
+		####################################
+		if hash nano 2>/dev/null; then
+			echo -n ""
+		else
+			f_DebianApt nano
+		fi
+		####################################
+	else
+		echo ""
+		p_fail "Unsupported System !"
+		exit
+    fi
+fi
+}
+####################################################################
+####################################################################
+function f_UGCCP()
+{
+	if [ -d /ugcc ] ; then
+		if [ -d /ugcc/www ] ; then
+			if [ "$(ls -A /ugcc/www)" ]; then
+				echo ""
+				echo -e "Files Exists : ${r}/ugcc/www${w}"
+				echo -e "Please delete '/ugcc/www' first"
+				echo -e "Use : rm -rf /ugcc"
+				p_fail "May be UGCC is already Installed"
+				exit
+			fi
+		fi
+	fi
+	cd $Main_Dir
+	echo ""
+	echo -e "${lp}Starting ${lg}Installing ${r}UGCC ${w}Gaming Panel"
+	echo ""
+	p_dots "Creating Folder for UGCC"
+	Folder_Delete '/ugcc'
+	mkdir /ugcc &> /dev/null
+	mkdir /ugcc/www &> /dev/null
+	mkdir /ugcc/mon &> /dev/null
+	mkdir /ugcc/logs &> /dev/null
+	mkdir /ugcc/deploy &> /dev/null
+	cd /ugcc/deploy &>/dev/null
+	p_ok "Folders Creation : ${g}Successful${w}"
+	echo ""
+	sleep 1
+	p_info "Downloading : ${lgreen}UGCC ${w}v${lr}1.72${w}"
+	echo ""
+	# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+	if [ -f Deploy.7z ]; then
+		rm -f Deploy.7z >/dev/null
+	fi
+	# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+	echo "########################################################"
+	echo ""
+	wget --progress=bar:force http://redirect.brainless.us/UGCC/1.72/Deploy.7z 2>&1 | wGet_Fit
+	echo ""
+	echo "########################################################"
+	p_dots "File Saved : `pwd`Deploy.7z"
+	p_info "Extracting : Deploy.7z"
+	7z x Deploy.7z &> /dev/null
+	rm -f Deploy.7z &>/dev/null
+	echo ""
+	p_ok "Extraction : ${g}Completed${w}"
+	echo ""
+	p_info "Copying database and configs"
+	echo ""
+	cd Deploy &> /dev/null
+	cd WWWPanel-Linux &> /dev/null
+	cp -r * /ugcc/www &> /dev/null
+	cd ../Monitor/Linux &> /dev/null
+	cp -r * /ugcc/mon &> /dev/null
+	cd ../../DB &> /dev/null
+	cp ugcc.db3 /ugcc/logs &> /dev/null
+	cd ../Configs/Linux &> /dev/null
+	cp Web.config /ugcc/www &> /dev/null
+	cp ugccmon.cfg /ugcc/mon &> /dev/null
+	cd /ugcc/www &> /dev/null
+	p_ok "Copying database & Conf's : ${lgreen}Completed${w}"
+	 if [ -f /etc/redhat-release ] ; then
+		if hash httpd 2>/dev/null; then
+			service httpd stop &> /dev/null
+		fi
+	 elif [ -f /etc/debian_version ] ; then
+		if hash apache2 2>/dev/null; then
+			service apache2 stop &> /dev/null
+		fi
+	 fi
+	p_dots "Starting UGCC Panel : /ugcc/www"
+	Get_IP=`curl curlmyip.com 2>/dev/null`
+	screen -dmS ugccpanel xsp2 --port 80
+	p_ok "Panel Started : ${g}$Get_IP${lg}:80${w}"
+	echo ""
+	}
+	
+##########################################################################
+# ---------------- { Don't even try to edit this ! } ------------------- #
+##########################################################################
+function f_Panel()
+{
+ if [ -f /etc/redhat-release ] ; then
+		echo ""
+		echo -e "$@"
+		p_dots "Checking for Dependencies"
+		f_PanelDep
+		p_info "Dependencies Installed"
+		ln -s /sbin/ifconfig /bin/ifconfig &> /dev/null
+		f_UGCCP
+		echo ""
+		sleep 2
+elif [ -f /etc/debian_version ] ; then
+	echo -e "$@"
+	p_dots "Checking for Dependencies"
+	sleep 1
+	f_PanelDep
+	sleep 1
+	p_info "Dependencies Installed"
+	echo ""
+	f_UGCCP
+else
+	p_fail "Really don't have any idea what Your System is !!"
+	exit
+	fi
+}
+####################################################################
+####################################################################
+function f_startPanel()
+{
+echo ""
+p_dots "Checking if Panel is Already Running"
+if ! screen -list | grep -q "ugccpanel"; then
+	Get_IP=`curl curlmyip.com 2>/dev/null`
+	cd /ugcc/www
+	screen -dmS ugccpanel xsp2 --port 80
+	p_dots "Starting ${r}UGCC ${w}Panel"
+	if screen -list | grep -q "ugccpanel"; then
+		sleep 2
+		p_ok "${r}UGCC ${w}Panel Started : ${g}$Get_IP${lg}:80${w}"
+		echo ""
+		sleep 2
+		exit
+	fi
+else
+	Get_IP=`curl curlmyip.com 2>/dev/null`
+    p_info "${r}UGCC ${w}Panel Already running : ${g}$Get_IP${lg}:80${w}"
+	echo ""
+	sleep 2
+	screen -S ugccpanel -p 0 -X quit >/dev/null
+	cd /ugcc/www
+	screen -dmS ugccpanel xsp2 --port 80
+	p_dots "Restarting ${r}UGCC ${w}Panel"
+	if screen -list | grep -q "ugccpanel"; then
+		sleep 1
+		p_ok "${r}UGCC ${w}Panel Restarted : ${g}$Get_IP${lg}:80${w}"
+		echo ""
+		sleep 2
+		exit
+	fi
+fi
+}
+function pp()
+{
+echo "$@" >> $S_Name.txt
+}
+function Last_Step_logs()
+{
+System_Bit=`uname -m | sed 's/x86_//;s/i[3-6]86/32/'`
+System_Info=`lsb_release -sd 2>/dev/null || cat /etc/*release or lsb_release -ds 2>/dev/null || cat /etc/*release 2>/dev/null | head -n1 || uname -om`
+echo "Last Script run : `date +"%r"` || `date +"%A"` || `date +"%d-%B-%y"` " > $S_Name.txt
+pp ""
+pp "Logs Directory : $Main_Dir/$Log_Dir"
+pp "UGCC Panel Details -:"
+pp "IP : $Get_IP"
+pp "UGCC Username : admin"
+pp "UGCC Password : admin"
+pp "System on which UGCC is running : ${r}Your System ${w}: ${lb}$System_Info ${lg}|| ${lgreen}$System_Bit${g} bit ${w}"
+pp ""
+pp "Thanks for Using this Script"
+pp "If you have any problem related this script, Please email me @ me.shirish.me"
+}
+###########################################################################################################################################
+# -------------------------------------------------------------- { Main } --------------------------------------------------------------- #
+###########################################################################################################################################
+
+
+f_LogDir
+f_Panel
+
+if [ "$1" == "-install" ] || [ "$1" == "--install" ] ||  [ "$1" == "install" ] || [ "$1" == "Install" ] ; then
+	f_root
+	f_Main
+	f_LogDir
+	f_Panel
+#Last Step
+	f_CleanAll_RedHat 'p7zip_9.20.1' 'p7zip_9.20.1_src_all.tar.bz2'
+	f_CleanAll_RedHat 'xsp-2.10.2' 'xsp-2.10.2.tar.bz2'
+	f_CleanAll_RedHat 'mono-2.10.9' 'mono-2.10.9.tar.bz2'
+	echo ""
+	echo "Everything Should work by now"
+	echo -e "If it doesn't then read  '$Main_Dir${r}$S_Name${w}.txt"
+else
+	echo ""
+	echo "${r}Usage ${w}: { --install | start | stop | restart }"
+	echo "Example : $0 --install"
+fi
