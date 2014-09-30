@@ -582,6 +582,7 @@ function f_Panel()
 		echo -e "$@"
 		p_dots "Checking for Dependencies"
 		f_PanelDep
+		echo ""
 		p_info "Dependencies Installed"
 		ln -s /sbin/ifconfig /bin/ifconfig &> /dev/null
 		f_UGCCP
@@ -593,6 +594,7 @@ elif [ -f /etc/debian_version ] ; then
 	sleep 1
 	f_PanelDep
 	sleep 1
+	echo ""
 	p_info "Dependencies Installed"
 	echo ""
 	f_UGCCP
@@ -607,9 +609,35 @@ function f_startPanel()
 {
 echo ""
 p_dots "Checking if Panel is Already Running"
+if [ "$1" == "start" ] ; then
+	if ! screen -list | grep -q "ugccpanel"; then
+		if [ -d /ugcc ] ; then
+			if [ -d /ugcc/www ] ; then
+				if [ "$(ls -A /ugcc/www)" ]; then
+					Get_IP=`curl curlmyip.com 2>/dev/null`
+					cd /ugcc/www &>/dev/null 
+					screen -dmS ugccpanel xsp2 --port 80
+					p_dots "Starting ${r}UGCC ${w}Panel"
+					if screen -list | grep -q "ugccpanel"; then
+						sleep 2
+						p_ok "${r}UGCC ${w}Panel Started : ${g}$Get_IP${lg}:80${w}"
+						echo ""
+						sleep 2
+						exit
+					fi
+				fi
+			fi
+		fi
+	else
+		echo ""
+		p_fail "S"
+	fi
+elif [ "$1" == "stop" ] ; then
+fi
+	
 if ! screen -list | grep -q "ugccpanel"; then
 	Get_IP=`curl curlmyip.com 2>/dev/null`
-	cd /ugcc/www
+	cd /ugcc/www &>/dev/null
 	screen -dmS ugccpanel xsp2 --port 80
 	p_dots "Starting ${r}UGCC ${w}Panel"
 	if screen -list | grep -q "ugccpanel"; then
@@ -662,23 +690,22 @@ pp "If you have any problem related this script, Please email me @ me.shirish.me
 ###########################################################################################################################################
 
 
-f_LogDir
-f_Panel
-
 if [ "$1" == "-install" ] || [ "$1" == "--install" ] ||  [ "$1" == "install" ] || [ "$1" == "Install" ] ; then
 	f_root
 	f_Main
 	f_LogDir
-	f_Panel
+	f_Panel 'Checking for Prerequisites Required for UGCC GPanel'
 #Last Step
 	f_CleanAll_RedHat 'p7zip_9.20.1' 'p7zip_9.20.1_src_all.tar.bz2'
 	f_CleanAll_RedHat 'xsp-2.10.2' 'xsp-2.10.2.tar.bz2'
 	f_CleanAll_RedHat 'mono-2.10.9' 'mono-2.10.9.tar.bz2'
 	echo ""
+	Last_Step_logs
 	echo "Everything Should work by now"
 	echo -e "If it doesn't then read  '$Main_Dir${r}$S_Name${w}.txt"
 else
 	echo ""
 	echo "${r}Usage ${w}: { --install | start | stop | restart }"
 	echo "Example : $0 --install"
+	f_root
 fi
