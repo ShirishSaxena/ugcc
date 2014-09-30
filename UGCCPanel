@@ -633,8 +633,8 @@ if [ "$1" == "start" ] ; then
 		p_fail "S"
 	fi
 elif [ "$1" == "stop" ] ; then
+echo -n ""
 fi
-	
 if ! screen -list | grep -q "ugccpanel"; then
 	Get_IP=`curl curlmyip.com 2>/dev/null`
 	cd /ugcc/www &>/dev/null
