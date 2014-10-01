@@ -1,13 +1,7 @@
-ugcc
-====================================================================
-
-UGCC Gaming Panel { Linux Installer }
-
 ### Welcome to UGCC Gaming Panel Installer { For Linux }.
 
 
 Usage { CentOs/RedHat } :-
-
 ```
 $ yum update -y
 $ cd
@@ -17,7 +11,6 @@ $ ./UGCCPanel --install
 ```
 
 Usage { Ubuntu/Debian} :-
-
 ```
 $ apt-get update -y
 $ cd
@@ -28,7 +21,7 @@ $ ./UGCCPanel --install
 
 If you're using any OS other than Ubuntu/Debian/RedHat/CentOS then this script won't gonna work.
 
-### Features :-
+### Features
 
 - Check for Distribution { Debian/RedHat }
 - Support for Building Mono v2.10.9 , XSP v2.10.2, P7Zip v9.20.1 from Source { Available only for RedHat/CentOs }
@@ -49,3 +42,6 @@ More features are coming soon ...
 
 Having trouble with UGCCPanel Installer ? 
 Contact me @ me.shirish.me and I’ll help you sort it out.
+
+### License and Other
+This Installer is on GNU v2 license.
