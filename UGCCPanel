@@ -2,7 +2,7 @@
 
 # Automatic UGCC Gaming Panel Installtion Script
 # Author : Shirish Saxena
-# Version : 1.1v
+# Version : 1.2v
 # Copyright to Shirish [ me@shirish.me ] @ 2014
 #
 
@@ -298,7 +298,7 @@ function f_Build_XSP2()
 			p_info "Building Mono_XSP v2.10.2 : ${lgreen}Started${w}"
 			sleep 1
 			make >> $Log_Dir/Building_xsp2.log 2>&1 
-			echo "Building Mono_XSP v.2.10.2 : ${lgreen}Completed${w}"
+			echo -e "Building Mono_XSP v.2.10.2 : ${lgreen}Completed${w}"
 			p_ok "Installing Mono_XSP v2.10.2"
 			make install >> $Log_Dir/Install_xsp.log 2>&1
 			sleep 1
@@ -351,7 +351,7 @@ function f_Build_Mono()
 			sleep 1
 			echo ""
 			make >> $Log_Dir/Building_Mono.log 2>&1 
-			echo "Building Mono v.2.10.9 : ${lgreen}Completed${w}"
+			echo -e "Building Mono v.2.10.9 : ${lgreen}Completed${w}"
 			p_ok "Installing Mono v2.10.9"
 			make install >> $Log_Dir/Make_Install_Mono.log 2>&1
 			sleep 1
@@ -411,6 +411,14 @@ if [ "${OS}" = "Linux" ] ; then
 		else
 			echo ""
 			f_Build_Mono
+		fi
+		####################################
+		####################################
+		if hash xsp 2>/dev/null; then
+			echo -n ""
+		else
+			echo ""
+			f_Build_XSP2
 		fi
 		####################################
 		####################################
