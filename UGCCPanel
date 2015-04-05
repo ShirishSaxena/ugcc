@@ -2,12 +2,15 @@
 
 # Automatic UGCC Gaming Panel Installtion Script
 # Author : Shirish Saxena
-# Version : 1.2v
-# Copyright to Shirish [ me@shirish.me ] @ 2014
+# Version : 1.99
+# Copyright to Shirish [ me@shirish.me ] @ 2015
 #
 
 
 # --------------------------------------------- { Main Function/Var's } --------------------------------------------- #
+
+Version_To_DL="1.76"
+P_Link="http://redirect.brainless.us/UGCC/$Version_To_DL/Deploy.7z"
 
 ######################################################################################################################
 w='\033[0m'
@@ -47,7 +50,6 @@ function f_System_Info()
 {
 System_Bit=`uname -m | sed 's/x86_//;s/i[3-6]86/32/'`
 System_Info=`lsb_release -sd 2>/dev/null || cat /etc/*release or lsb_release -ds 2>/dev/null || cat /etc/*release 2>/dev/null | head -n1 || uname -om`
-echo ""
 echo -e "${r}Your System ${w}: ${lb}$System_Info ${lg}|| ${lgreen}$System_Bit${g} bit ${w}"
 }
 ##################################
@@ -62,6 +64,17 @@ fi
 }
 ##################################
 ##################################
+function Get_Ram()
+{
+Get_Data=`free -m | grep Mem` 
+Free_Ram=`echo $Get_Data | cut -f3 -d' '`
+Total_Ram=`echo $Get_Data | cut -f2 -d' '`
+
+echo -e "Total Ram ${c}:${w} $Total_Ram"
+echo -e "Free Ram  ${c}:${w} $Free_Ram"
+}
+##################################
+##################################
 function f_Main()
 {
 clear
@@ -69,7 +82,7 @@ echo ""
 echo -e "${w}Welcome to ${r}UGCC${c}Gaming Panel ${lg}Installer${w}"
 echo -e "Author     : ${g}Shirish${w} Saxena"
 echo -e "${w}Xfire  : mrshowoff15${w}"
-echo -e "Version : ${lb}1.1v${w}"
+echo -e "Version : ${lb}1.4.9v${w}"
 }
 ##################################
 ##################################
@@ -157,12 +170,18 @@ fi
 ##################################
 function f_DebianApt()
 {
-	echo ""
-	p_dots "Installing $1"
-	p_dots "Installing $1"
-	apt-get install $1 -y &> /dev/null
-	p_ok "Installed : ${g}$1${w}"
-	sleep 3
+####################################
+	if hash $2 2>/dev/null; then
+		echo -n ""
+	else
+		echo ""
+		p_dots "Installing $1"
+		p_dots "Installing $1"
+		apt-get install $1 -y &> /dev/null
+		p_ok "Installed : ${g}$1${w}"
+		sleep 3
+	fi
+####################################
 }
 ##################################
 ##################################
@@ -452,47 +471,13 @@ if [ "${OS}" = "Linux" ] ; then
 		echo ""
 	elif [ -f /etc/debian_version ] ; then
 		#################################
-		if hash mono 2>/dev/null; then
-			echo -n ""
-		else
-			f_DebianApt mono-complete
-		fi
-		####################################
-		####################################
-		if hash xsp2 2>/dev/null; then
-			echo -n ""
-		else
-			f_DebianApt mono-xsp2
-		fi
-		####################################
-		####################################
-		if hash xsp2 2>/dev/null; then
-			echo -n ""
-		else
-			f_DebianApt p7zip-full
-		fi
-		####################################
-		####################################
-		if hash curl 2>/dev/null; then
-			echo -n ""
-		else
-			f_DebianApt curl
-		fi
-		####################################
-		####################################
-		if hash screen 2>/dev/null; then
-			echo -n ""
-		else
-			f_DebianApt screen
-		fi
-		####################################
-		####################################
-		if hash nano 2>/dev/null; then
-			echo -n ""
-		else
-			f_DebianApt nano
-		fi
-		####################################
+			f_DebianApt 'mono-complete' 'mono'
+			f_DebianApt 'mono-xsp2' 'xsp'
+			f_DebianApt 'p7zip-full' '7z'
+			f_DebianApt 'curl' 'curl'
+			f_DebianApt 'screen' 'screen'
+			f_DebianApt 'nano' 'nano'
+		#################################
 	else
 		echo ""
 		p_fail "Unsupported System !"
@@ -540,7 +525,7 @@ function f_UGCCP()
 	# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 	echo "########################################################"
 	echo ""
-	wget --progress=bar:force http://redirect.brainless.us/UGCC/1.72/Deploy.7z 2>&1 | wGet_Fit
+	wget --progress=bar:force $P_Link 2>&1 | wGet_Fit
 	echo ""
 	echo "########################################################"
 	p_dots "File Saved : `pwd`Deploy.7z"
@@ -588,7 +573,7 @@ function f_Panel()
  if [ -f /etc/redhat-release ] ; then
 		echo ""
 		echo -e "$@"
-		p_dots "Checking for Dependencies"
+		p_info "Checking for Dependencies"
 		f_PanelDep
 		echo ""
 		p_info "Dependencies Installed"
@@ -598,7 +583,7 @@ function f_Panel()
 		sleep 2
 elif [ -f /etc/debian_version ] ; then
 	echo -e "$@"
-	p_dots "Checking for Dependencies"
+	p_info "Checking for Dependencies"
 	sleep 1
 	f_PanelDep
 	sleep 1
@@ -615,14 +600,13 @@ else
 ####################################################################
 function f_startPanel()
 {
+Get_IP=`curl curlmyip.com 2>/dev/null`
 echo ""
-p_dots "Checking if Panel is Already Running"
 if [ "$1" == "start" ] ; then
 	if ! screen -list | grep -q "ugccpanel"; then
 		if [ -d /ugcc ] ; then
 			if [ -d /ugcc/www ] ; then
 				if [ "$(ls -A /ugcc/www)" ]; then
-					Get_IP=`curl curlmyip.com 2>/dev/null`
 					cd /ugcc/www &>/dev/null 
 					screen -dmS ugccpanel xsp2 --port 80
 					p_dots "Starting ${r}UGCC ${w}Panel"
@@ -630,47 +614,49 @@ if [ "$1" == "start" ] ; then
 						sleep 2
 						p_ok "${r}UGCC ${w}Panel Started : ${g}$Get_IP${lg}:80${w}"
 						echo ""
-						sleep 2
 						exit
 					fi
 				fi
 			fi
+		else
+			echo ""
+			p_fail "Directory not Found : ${r}/ugcc${w}"
+			echo ""
+			exit
 		fi
 	else
 		echo ""
-		p_fail "S"
+		p_fail "Already running via Screen : ${g}$Get_IP${lg}:80${w}"
+		echo ""
+		exit
 	fi
 elif [ "$1" == "stop" ] ; then
-echo -n ""
-fi
-if ! screen -list | grep -q "ugccpanel"; then
-	Get_IP=`curl curlmyip.com 2>/dev/null`
-	cd /ugcc/www &>/dev/null
-	screen -dmS ugccpanel xsp2 --port 80
-	p_dots "Starting ${r}UGCC ${w}Panel"
 	if screen -list | grep -q "ugccpanel"; then
-		sleep 2
-		p_ok "${r}UGCC ${w}Panel Started : ${g}$Get_IP${lg}:80${w}"
+		p_dots "Stopping UGCC Panel"
+		screen -S ugccpanel -p 0 -X quit >/dev/null
+		if ! screen -list | grep -q "ugccpanel"; then
+			sleep 1
+			p_ok "UGCC Panel : ${r}Stopped${w}"
+			echo ""
+			exit
+		else
+			echo ""
+			p_fail "Some Error Occur : Contact Support"
+			echo ""
+			exit
+		fi
+	else
 		echo ""
-		sleep 2
+		p_warn "UGCC Panel is not Running"
+		echo ""
+		p_fail "UGCC Panel not Active @ screen 'ugccpanel'"
+		echo ""
 		exit
 	fi
-else
-	Get_IP=`curl curlmyip.com 2>/dev/null`
-    p_info "${r}UGCC ${w}Panel Already running : ${g}$Get_IP${lg}:80${w}"
+elif [ "$1" == "restart" ] ; then
 	echo ""
-	sleep 2
-	screen -S ugccpanel -p 0 -X quit >/dev/null
-	cd /ugcc/www
-	screen -dmS ugccpanel xsp2 --port 80
-	p_dots "Restarting ${r}UGCC ${w}Panel"
-	if screen -list | grep -q "ugccpanel"; then
-		sleep 1
-		p_ok "${r}UGCC ${w}Panel Restarted : ${g}$Get_IP${lg}:80${w}"
-		echo ""
-		sleep 2
-		exit
-	fi
+	echo "not Supported yet !!"
+	exit
 fi
 }
 function pp()
@@ -683,24 +669,53 @@ System_Bit=`uname -m | sed 's/x86_//;s/i[3-6]86/32/'`
 System_Info=`lsb_release -sd 2>/dev/null || cat /etc/*release or lsb_release -ds 2>/dev/null || cat /etc/*release 2>/dev/null | head -n1 || uname -om`
 echo "Last Script run : `date +"%r"` || `date +"%A"` || `date +"%d-%B-%y"` " > $S_Name.txt
 pp ""
-pp "Logs Directory : $Main_Dir/$Log_Dir"
+pp "Logs Directory : $Log_Dir"
 pp "UGCC Panel Details -:"
 pp "IP : $Get_IP"
 pp "UGCC Username : admin"
 pp "UGCC Password : admin"
-pp "System on which UGCC is running : ${r}Your System ${w}: ${lb}$System_Info ${lg}|| ${lgreen}$System_Bit${g} bit ${w}"
+pp "Your System : $System_Info || $System_Bit bit"
 pp ""
 pp "Thanks for Using this Script"
 pp "If you have any problem related this script, Please email me @ me.shirish.me"
+}
+function My_System_Curl()
+{
+		if hash curl 2>/dev/null; then
+			Get_IP=`curl curlmyip.com 2>/dev/null`
+			echo -e "Your IP : ${g}$Get_IP${w}"
+		else
+			p_dots "Installing curl"
+			p_dots "Installing curl"
+			$1 install curl -y &> /dev/null
+			if hash curl 2>/dev/null; then
+				p_ok "Installed : ${g}Curl${w}"
+				echo -en ""
+				Get_IP=`curl curlmyip.com 2>/dev/null`
+				echo -en "Your IP : ${g}$Get_IP${w}"
+			else
+				echo -en "Error : Curl can't be installed"
+				echo -en ""
+			fi
+		fi
+}
+function My_System()
+{
+if [ -f /etc/redhat-release ] ; then
+My_System_Curl yum
+elif [ -f /etc/debian_version ] ; then
+My_System_Curl apt-get
+fi
 }
 ###########################################################################################################################################
 # -------------------------------------------------------------- { Main } --------------------------------------------------------------- #
 ###########################################################################################################################################
 
-
+f_root
 if [ "$1" == "-install" ] || [ "$1" == "--install" ] ||  [ "$1" == "install" ] || [ "$1" == "Install" ] ; then
-	f_root
 	f_Main
+	echo ""
+	f_System_Info
 	f_LogDir
 	f_Panel 'Checking for Prerequisites Required for UGCC GPanel'
 #Last Step
@@ -710,10 +725,21 @@ if [ "$1" == "-install" ] || [ "$1" == "--install" ] ||  [ "$1" == "install" ] |
 	echo ""
 	Last_Step_logs
 	echo "Everything Should work by now"
-	echo -e "If it doesn't then read  '$Main_Dir${r}$S_Name${w}.txt"
+	echo -e "If it doesn't then read  '$Main_Dir/${r}$S_Name${w}.txt"
+elif [ "$1" == "myos" ] || [ "$1" == "checkmyos" ] || [ "$1" == "mysystem" ] || [ "$1" == "system" ] ; then
+	f_System_Info
+	Get_Ram
+	My_System
+	echo ""
+	exit
+elif [ "$1" == "start" ] ; then
+	f_startPanel 'start'
+elif [ "$1" == "stop" ] ; then
+	f_startPanel 'stop'
+elif [ "$1" == "restart" ] ; then
+	f_startPanel 'restart'
 else
 	echo ""
-	echo -e "${r}Usage ${w}: { --install | start | stop | restart }"
+	echo -e "${r}Usage ${w}: { --install | start | stop | restart | mysystem }"
 	echo "Example : $0 --install"
-	f_root
 fi
