@@ -238,7 +238,7 @@ function f_Build_7Zip()
 			else
 					echo -n ""
 			fi
-			WGet_Passy 'http://shirish.me/Me/CentOs_Dep/p7zip_9.20.1_src_all.tar.bz2'
+			WGet_Passy 'http://mrshowoff.me/dl/UGCC_CentOs/p7zip_9.20.1_src_all.tar.bz2'
 			echo "#########################################################"
 			echo ""
 			p_warn "Installing Dependencies for building ${r}P7Zip ${w}v9.20.1"
@@ -292,7 +292,7 @@ function f_Build_XSP2()
 				else
 					echo "" &> /dev/null
 				fi
-			WGet_Passy 'http://shirish.me/Me/CentOs_Dep/xsp-2.10.2.tar.bz2'
+			WGet_Passy 'http://mrshowoff.me/dl/UGCC_CentOs/xsp-2.10.2.tar.bz2'
 			echo "#########################################################"
 			echo ""
 			sleep 2
@@ -343,7 +343,7 @@ function f_Build_Mono()
 				else
 					echo -n ""
 				fi
-			WGet_Passy 'http://shirish.me/Me/CentOs_Dep/mono-2.10.9.tar.bz2'
+			WGet_Passy 'http://mrshowoff.me/dl/UGCC_CentOs/mono-2.10.9.tar.bz2'
 			echo "#########################################################"
 			echo ""
 			sleep 2
