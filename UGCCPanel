@@ -2,15 +2,19 @@
 
 # Automatic UGCC Gaming Panel Installtion Script
 # Author : Shirish Saxena
-# Version : 1.99
-# Copyright to Shirish [ me@shirish.me ] @ 2015
+# Version : 2.00
+# Copyright to Shirish [ me@shirish.me ] @ 2017
 #
 
 
 # --------------------------------------------- { Main Function/Var's } --------------------------------------------- #
 
-Version_To_DL="1.76"
+
+Port_To_Run_Panel="17200"
+Version_To_DL="1.88"
+
 P_Link="http://redirect.brainless.us/UGCC/$Version_To_DL/Deploy.7z"
+
 
 ######################################################################################################################
 w='\033[0m'
@@ -516,7 +520,7 @@ function f_UGCCP()
 	p_ok "Folders Creation : ${g}Successful${w}"
 	echo ""
 	sleep 1
-	p_info "Downloading : ${lgreen}UGCC ${w}v${lr}1.72${w}"
+	p_info "Downloading : ${lgreen}UGCC ${w}v${lr}$Version_To_DL${w}"
 	echo ""
 	# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 	if [ -f Deploy.7z ]; then
@@ -559,9 +563,9 @@ function f_UGCCP()
 		fi
 	 fi
 	p_dots "Starting UGCC Panel : /ugcc/www"
-	Get_IP=`curl curlmyip.com 2>/dev/null`
-	screen -dmS ugccpanel xsp2 --port 80
-	p_ok "Panel Started : ${g}$Get_IP${lg}:80${w}"
+	Get_IP=`curl ipinfo.io/ip 2>/dev/null`
+	screen -dmS ugccpanel xsp2 --port $Port_To_Run_Panel
+	p_ok "Panel Started : ${g}$Get_IP${lg}:$Port_To_Run_Panel${w}"
 	echo ""
 	}
 	
@@ -600,7 +604,7 @@ else
 ####################################################################
 function f_startPanel()
 {
-Get_IP=`curl curlmyip.com 2>/dev/null`
+Get_IP=`curl ipinfo.io/ip 2>/dev/null`
 echo ""
 if [ "$1" == "start" ] ; then
 	if ! screen -list | grep -q "ugccpanel"; then
@@ -608,11 +612,11 @@ if [ "$1" == "start" ] ; then
 			if [ -d /ugcc/www ] ; then
 				if [ "$(ls -A /ugcc/www)" ]; then
 					cd /ugcc/www &>/dev/null 
-					screen -dmS ugccpanel xsp2 --port 80
+					screen -dmS ugccpanel xsp2 --port $Port_To_Run_Panel
 					p_dots "Starting ${r}UGCC ${w}Panel"
 					if screen -list | grep -q "ugccpanel"; then
 						sleep 2
-						p_ok "${r}UGCC ${w}Panel Started : ${g}$Get_IP${lg}:80${w}"
+						p_ok "${r}UGCC ${w}Panel Started : ${g}$Get_IP${lg}:$Port_To_Run_Panel${w}"
 						echo ""
 						exit
 					fi
@@ -626,7 +630,7 @@ if [ "$1" == "start" ] ; then
 		fi
 	else
 		echo ""
-		p_fail "Already running via Screen : ${g}$Get_IP${lg}:80${w}"
+		p_fail "Already running via Screen : ${g}$Get_IP${lg}:$Port_To_Run_Panel${w}"
 		echo ""
 		exit
 	fi
@@ -682,7 +686,7 @@ pp "If you have any problem related this script, Please email me @ me.shirish.me
 function My_System_Curl()
 {
 		if hash curl 2>/dev/null; then
-			Get_IP=`curl curlmyip.com 2>/dev/null`
+			Get_IP=`curl ipinfo.io/ip 2>/dev/null`
 			echo -e "Your IP : ${g}$Get_IP${w}"
 		else
 			p_dots "Installing curl"
@@ -691,7 +695,7 @@ function My_System_Curl()
 			if hash curl 2>/dev/null; then
 				p_ok "Installed : ${g}Curl${w}"
 				echo -en ""
-				Get_IP=`curl curlmyip.com 2>/dev/null`
+				Get_IP=`curl ipinfo.io/ip 2>/dev/null`
 				echo -en "Your IP : ${g}$Get_IP${w}"
 			else
 				echo -en "Error : Curl can't be installed"
